@@ -148,6 +148,11 @@ for epoch in range(num_epochs):
 
     print(f"Epoch {epoch+1}/{num_epochs} - Train Loss: {train_loss:.4f}, Test Loss: {test_loss:.4f}")
 
+    # Early stopping condition
+    if epoch > 0 and avg_test_loss > test_loss_values[epoch-1]:
+        print("Validation loss increasing. Stopping training.")
+        break
+
 # Save the trained model
 torch.save(model.state_dict(), 'crowd_counter_model.pth')
 
@@ -161,3 +166,17 @@ plt.xlabel('Epochs')
 plt.ylabel('Loss')
 plt.legend()
 plt.show()
+
+# Decision-making based on loss values
+if max(train_loss_values) > 1e7:
+    print("Very high training loss values. The model is not learning.")
+elif train_loss_values[-1] > train_loss_values[0] and test_loss_values[-1] > test_loss_values[0]:
+    print("Both training and validation losses are increasing. Underfitting.")
+elif train_loss_values[-1] > train_loss_values[0] and test_loss_values[-1] < test_loss_values[0]:
+    print("Overfitting. Consider regularization or early stopping.")
+elif train_loss_values[-1] < train_loss_values[0] and test_loss_values[-1] < test_loss_values[0]:
+    print("Both training and validation losses are decreasing. More training may improve the model.")
+elif train_loss_values[-1] < train_loss_values[0] and test_loss_values[-1] > test_loss_values[0]:
+    print("Validation loss is increasing. Consider regularization or model weight initialization.")
+else:
+    print("Unknown pattern. Review loss curves and experiment with different approaches.")
